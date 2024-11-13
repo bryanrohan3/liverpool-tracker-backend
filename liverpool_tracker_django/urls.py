@@ -10,6 +10,7 @@ api_router.register(r'users', viewsets.UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(api_router.urls)),
+    path('api/matches/', viewsets.MatchesView.as_view(), name='matches')  # Added .as_view() here
 ]
 
 urlpatterns += api_router.urls

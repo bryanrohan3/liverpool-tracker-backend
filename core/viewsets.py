@@ -5,6 +5,25 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from .models import UserProfile
 from .serializers import UserSerializer, UserLoginSerializer
+import requests
+from django.conf import settings
+from rest_framework.views import APIView
+
+class MatchesView(APIView):
+    def get(self, request):
+        team_id = request.query_params.get('teamId', 64)  # Default to team 64 if no teamId is provided
+        url = f"https://api.football-data.org/v4/teams/{team_id}/matches?status=SCHEDULED"
+        
+        headers = {
+            "X-Auth-Token": settings.FOOTBALL_API_KEY,
+        }
+        
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return Response(response.json())
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class UserViewSet(viewsets.GenericViewSet, 
                   mixins.CreateModelMixin, 

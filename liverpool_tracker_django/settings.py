@@ -43,8 +43,12 @@ INSTALLED_APPS = [
     'core',
 ]
 
+FOOTBALL_API_KEY = "62a3fb48579646eb995958561b257419"
+
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
+    "http://localhost:3000",
 ]
 
 REST_FRAMEWORK = {
