@@ -25,7 +25,12 @@ SECRET_KEY = 'django-insecure-3rm7k8ep*k!6b!ghtj+8nsqgneo2sblo^i$)k7eb&x2a2yie6s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.68.101',  # Add your computer's local IP address
+]
+
 
 
 # Application definition
@@ -49,7 +54,11 @@ FOOTBALL_API_KEY = "62a3fb48579646eb995958561b257419"
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://localhost:3000",
+    'http://192.168.68.101:3000',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Debugging only
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

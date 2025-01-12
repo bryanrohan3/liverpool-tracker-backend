@@ -26,6 +26,20 @@ class MatchesView(APIView):
             return Response(response.json())
         except requests.exceptions.RequestException as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class MatchesProxyView(APIView):
+    def get(self, request, match_id):
+        url = f"https://api.football-data.org/v4/matches/{match_id}"
+        headers = {
+            "X-Auth-Token": settings.FOOTBALL_API_KEY,
+        }
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return Response(response.json(), status=response.status_code)
+        except requests.exceptions.RequestException as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
