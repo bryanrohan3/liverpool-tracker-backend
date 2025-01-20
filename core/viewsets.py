@@ -122,3 +122,29 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         
         # Return 400 Bad Request if authentication fails
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class FlightsViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Flight.objects.all()
+    serializer_class = FlightsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        """
+        Automatically associate the flight with the logged-in user.
+        """
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        """
+        Ensure users can only see their own flights.
+        """
+        return Flight.objects.filter(user=self.request.user)

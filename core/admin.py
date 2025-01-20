@@ -1,5 +1,5 @@
 from django.contrib import admin
-from core.models import UserProfile, FriendRequest
+from core.models import *
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
@@ -51,3 +51,32 @@ class FriendRequestAdmin(admin.ModelAdmin):
         return obj.to_user.username
 
     to_user.short_description = 'To'
+
+
+@admin.register(Flight)
+class FlightAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 
+        'user_username', 
+        'game_id', 
+        'airline', 
+        'departure_airport', 
+        'arrival_airport', 
+        'departure_date', 
+        'departure_time', 
+        'is_active'
+    )
+    list_filter = ('airline', 'departure_airport', 'arrival_airport', 'is_active', 'departure_date')
+    search_fields = (
+        'user__username', 
+        'game_id', 
+        'airline', 
+        'departure_airport', 
+        'arrival_airport'
+    )
+    raw_id_fields = ('user',)  # Optimized for large datasets
+
+    def user_username(self, obj):
+        """Returns the username of the associated user."""
+        return obj.user.username
+    user_username.short_description = 'Username'  # Customize column header

@@ -57,3 +57,17 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
+
+
+class FlightsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Flight
+        fields = ['id', 'game_id', 'user', 'airline', 'departure_airport', 'arrival_airport', 'departure_time', 'departure_date', 'is_active']
+        read_only_fields = ['user']
+
+    def create(self, validated_data):
+        # Automatically set the user to the currently authenticated user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)

@@ -27,3 +27,17 @@ class FriendRequest(models.Model):
 
     def __str__(self):
         return f"Friend request from {self.from_user} to {self.to_user}"
+    
+
+class Flight(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flights")  # Links flight to a user
+    game_id = models.PositiveIntegerField()  # Stores the game ID from the frontend or API
+    airline = models.CharField(max_length=50)
+    departure_airport = models.CharField(max_length=50)
+    arrival_airport = models.CharField(max_length=50)
+    departure_time = models.TimeField()
+    departure_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Flight for Game {self.game_id} by {self.user.username}"
