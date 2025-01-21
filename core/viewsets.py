@@ -42,8 +42,12 @@ class MatchesProxyView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    queryset = User.objects.all()
+class UserViewSet(
+    mixins.CreateModelMixin,  # Enable POST requests to create users
+    mixins.ListModelMixin,    # Enable GET requests to list users
+    viewsets.GenericViewSet
+):
+    queryset = UserProfile.objects.all()
     serializer_class = UserSerializer
 
     def get_queryset(self):
@@ -53,8 +57,8 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         """
         search = self.request.query_params.get('search', '')
         if search:
-            return User.objects.filter(username__icontains=search).exclude(id=self.request.user.id)
-        return User.objects.exclude(id=self.request.user.id)
+            return UserProfile.objects.filter(user__username__icontains=search).exclude(user=self.request.user)
+        return UserProfile.objects.exclude(user=self.request.user)
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated], url_path='send-friend-request')
     def send_friend_request(self, request, pk=None):
@@ -148,3 +152,26 @@ class FlightsViewSet(
         Ensure users can only see their own flights.
         """
         return Flight.objects.filter(user=self.request.user)
+    
+
+class AttendingGameViewSet(mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = AttendingGame.objects.all()
+    serializer_class = AttendingGameSerializer
+
+    def perform_create(self, serializer):
+        """
+        Automatically associate the flight with the logged-in user.
+        """
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        """
+        Ensure users can only see their own flights.
+        """
+        return AttendingGame.objects.filter(user=self.request.user)

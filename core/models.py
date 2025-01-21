@@ -41,3 +41,11 @@ class Flight(models.Model):
 
     def __str__(self):
         return f"Flight for Game {self.game_id} by {self.user.username}"
+    
+
+class AttendingGame(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    game_id = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"User {self.user.username} attending game {self.game_id}"

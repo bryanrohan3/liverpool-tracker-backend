@@ -19,7 +19,11 @@ class UserSerializer(serializers.ModelSerializer):
         # Extract user data
         user_data = validated_data.pop('user')
         password = validated_data.pop('password')
-        
+
+        # Check if the username already exists
+        if User.objects.filter(username=user_data['username']).exists():
+            raise serializers.ValidationError({"username": "This username is already taken."})
+
         # Create the User
         user = User.objects.create_user(
             username=user_data['username'],
@@ -28,14 +32,15 @@ class UserSerializer(serializers.ModelSerializer):
             email=user_data['email'],
             password=password
         )
-        
+
         # Create the UserProfile
         user_profile = UserProfile.objects.create(user=user, **validated_data)
-        
+
         # Generate a token for the new user
         Token.objects.create(user=user)
-        
+
         return user_profile
+
 
     def get_token(self, obj):
         token, _ = Token.objects.get_or_create(user=obj.user)
@@ -53,7 +58,7 @@ class FriendRequestSerializer(serializers.ModelSerializer):
         fields = ['id', 'from_user', 'to_user', 'status', 'date_time_created']
         read_only_fields = ['from_user', 'date_time_created']
 
-class UserSerializer(serializers.ModelSerializer):
+class BasicUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email']
@@ -71,3 +76,18 @@ class FlightsSerializer(serializers.ModelSerializer):
         if request and hasattr(request, 'user'):
             validated_data['user'] = request.user
         return super().create(validated_data)
+
+
+class AttendingGameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendingGame
+        fields = ['id', 'user', 'game_id']
+        read_only_fields = ['user']
+
+    def create(self, validated_data):
+        # Automatically set the user to the currently authenticated user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().create(validated_data)
+    
