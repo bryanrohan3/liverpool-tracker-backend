@@ -67,8 +67,22 @@ class BasicUserSerializer(serializers.ModelSerializer):
 class FlightsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ['id', 'game_id', 'user', 'airline', 'departure_airport', 'arrival_airport', 'departure_time', 'departure_date', 'is_active']
+        fields = ['id', 'game_id', 'user', 'airline', 'departure_airport', 'arrival_airport', 'departure_time', 'departure_date', 'is_return', 'return_time', 'return_date', 'is_active']
         read_only_fields = ['user']
+
+    def validate(self, data):
+        """
+        Custom validation to ensure that if `is_return` is True, return time and date are provided.
+        """
+        if data.get('is_return', False):
+            if not data.get('return_time') or not data.get('return_date'):
+                raise ValidationError("Return time and date must be provided when is_return is True.")
+        else:
+            # Ensure return_time and return_date are not set if is_return is False
+            if data.get('return_time') or data.get('return_date'):
+                raise ValidationError("Return time and date should not be provided when is_return is False.")
+
+        return data
 
     def create(self, validated_data):
         # Automatically set the user to the currently authenticated user
@@ -77,6 +91,12 @@ class FlightsSerializer(serializers.ModelSerializer):
             validated_data['user'] = request.user
         return super().create(validated_data)
 
+    def update(self, instance, validated_data):
+        # Automatically set the user to the currently authenticated user
+        request = self.context.get('request')
+        if request and hasattr(request, 'user'):
+            validated_data['user'] = request.user
+        return super().update(instance, validated_data)
 
 class AttendingGameSerializer(serializers.ModelSerializer):
     class Meta:

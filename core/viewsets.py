@@ -42,6 +42,7 @@ class MatchesProxyView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 class UserViewSet(
     mixins.CreateModelMixin,  # Enable POST requests to create users
     mixins.ListModelMixin,    # Enable GET requests to list users
@@ -59,6 +60,15 @@ class UserViewSet(
         if search:
             return UserProfile.objects.filter(user__username__icontains=search).exclude(user=self.request.user)
         return UserProfile.objects.exclude(user=self.request.user)
+    
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated], url_path='current')
+    def current(self, request):
+        """
+        Get the profile of the currently authenticated user.
+        """
+        user_profile = UserProfile.objects.get(user=request.user)
+        serializer = UserSerializer(user_profile)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated], url_path='send-friend-request')
     def send_friend_request(self, request, pk=None):
@@ -120,13 +130,12 @@ class UserViewSet(
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
                 'message': 'Login successful',
-                # 'user': UserSerializer(UserProfile.objects.get(user=user)).data,
-                # 'token': token.key
+                'user': UserSerializer(UserProfile.objects.get(user=user)).data,
+                'token': token.key
             }, status=status.HTTP_200_OK)
         
         # Return 400 Bad Request if authentication fails
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class FlightsViewSet(
